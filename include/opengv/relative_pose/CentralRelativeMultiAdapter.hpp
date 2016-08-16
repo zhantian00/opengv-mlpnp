@@ -89,7 +89,7 @@ public:
       size_t pairIndex, size_t correspondenceIndex ) const;
   /** See parent-class */
   virtual bearingVector_t getBearingVector2(
-      size_t pairIndex, size_t correspondenceIndex ) const;
+	  size_t pairIndex, size_t correspondenceIndex ) const;
   /** See parent-class */
   virtual double getWeight( size_t pairIndex, size_t correspondenceIndex ) const;
   /** See parent-class */

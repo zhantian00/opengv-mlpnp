@@ -43,7 +43,12 @@ namespace relative_pose
 {
 namespace modules
 {
-
+rotation_t sixpt_urban_main_onlyRot(
+		const bearingVectors_t& f1,
+		const bearingVectors_t& f2);
+transformation_t sixpt_urban_main(
+	const bearingVectors_t& f1,
+	const bearingVectors_t& f2);
 void fivept_stewenius_main(
     const Eigen::Matrix<double,9,4> & EE,
     complexEssentials_t & complexEssentials );

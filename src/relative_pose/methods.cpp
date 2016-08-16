@@ -43,6 +43,167 @@
 #include <opengv/math/rodrigues.hpp>
 #include <iostream>
 
+opengv::transformation_t
+opengv::relative_pose::sixpt_urban(
+const RelativeAdapterBase & adapter)
+{
+	const int numCorrespondences = adapter.getNumberCorrespondences();
+	std::vector<int> idx(numCorrespondences);
+	for (int i = 0; i < numCorrespondences; ++i)
+		idx[i] = i;
+	return sixpt_urban(adapter, idx);
+
+}
+
+opengv::transformation_t
+opengv::relative_pose::sixpt_urban(
+const RelativeAdapterBase & adapter,
+const std::vector<int> & indices)
+{
+	const int numCorrespondences = indices.size();
+	bearingVectors_t f1(numCorrespondences), f2(numCorrespondences);
+
+	for (size_t i = 0; i < numCorrespondences; ++i)
+	{
+		f1[i] = adapter.getBearingVector1(indices[i]);
+		f2[i] = adapter.getBearingVector2(indices[i]);
+	}
+		
+	return opengv::relative_pose::modules::sixpt_urban_main(f1, f2);
+}
+
+opengv::rotation_t
+opengv::relative_pose::sixpt_urban_rotOnly(
+const RelativeAdapterBase & adapter)
+{
+	const int numCorrespondences = adapter.getNumberCorrespondences();
+	std::vector<int> idx(numCorrespondences);
+	for (size_t i = 0; i < numCorrespondences; ++i)
+		idx[i] = i;
+	return sixpt_urban_rotOnly(adapter, idx);
+}
+
+opengv::rotation_t
+opengv::relative_pose::sixpt_urban_rotOnly(
+const RelativeAdapterBase & adapter,
+const std::vector<int> & indices)
+{
+	const int numCorrespondences = indices.size();
+	bearingVectors_t f1(numCorrespondences), f2(numCorrespondences);
+
+	for (int i = 0; i < numCorrespondences; ++i)
+	{
+		f1[i] = adapter.getBearingVector1(indices[i]);
+		f2[i] = adapter.getBearingVector2(indices[i]);
+	}
+
+	return opengv::relative_pose::modules::sixpt_urban_main_onlyRot(f1, f2);
+}
+
+namespace opengv
+{
+	namespace relative_pose
+	{
+		namespace modules
+		{
+			opengv::rotation_t opengv::relative_pose::modules::sixpt_urban_main_onlyRot(
+				const bearingVectors_t& f1,
+				const bearingVectors_t& f2)
+			{
+				size_t numberCorrespondences = f1.size();
+				assert(numberCorrespondences > 5);
+				const int rowsA = 2 * numberCorrespondences;
+				Eigen::MatrixXd A = MatrixXd(rowsA, 12);
+				A.setZero();
+				for (size_t i = 0; i < numberCorrespondences; ++i)
+				{
+					// nullspace of right vector
+					Eigen::JacobiSVD<Eigen::MatrixXd, Eigen::HouseholderQRPreconditioner>
+						svd_f(f2[i].transpose(), Eigen::ComputeFullV);
+					Eigen::MatrixXd nullspace = svd_f.matrixV().block(0, 1, 3, 2);
+
+					// r11
+					A(2 * i, 0) = nullspace(0, 0) * f1[i][0];
+					A(2 * i + 1, 0) = nullspace(0, 1) * f1[i][0];
+					// r12
+					A(2 * i, 1) = nullspace(0, 0) * f1[i][1];
+					A(2 * i + 1, 1) = nullspace(0, 1) * f1[i][1];
+					// r13
+					A(2 * i, 2) = nullspace(0, 0) * f1[i][2];
+					A(2 * i + 1, 2) = nullspace(0, 1) * f1[i][2];
+					// r21
+					A(2 * i, 3) = nullspace(1, 0) * f1[i][0];
+					A(2 * i + 1, 3) = nullspace(1, 1) * f1[i][0];
+					// r22
+					A(2 * i, 4) = nullspace(1, 0) * f1[i][1];
+					A(2 * i + 1, 4) = nullspace(1, 1)* f1[i][1];
+					// r23
+					A(2 * i, 5) = nullspace(1, 0) * f1[i][2];
+					A(2 * i + 1, 5) = nullspace(1, 1) * f1[i][2];
+					// r31
+					A(2 * i, 6) = nullspace(2, 0) * f1[i][0];
+					A(2 * i + 1, 6) = nullspace(2, 1) * f1[i][0];
+					// r32
+					A(2 * i, 7) = nullspace(2, 0) * f1[i][1];
+					A(2 * i + 1, 7) = nullspace(2, 1) * f1[i][1];
+					// r33
+					A(2 * i, 8) = nullspace(2, 0) * f1[i][2];
+					A(2 * i + 1, 8) = nullspace(2, 1) * f1[i][2];
+					// t1
+					A(2 * i, 9) = nullspace(0, 0);
+					A(2 * i + 1, 9) = nullspace(0, 1);
+					// t2
+					A(2 * i, 10) = nullspace(1, 0);
+					A(2 * i + 1, 10) = nullspace(1, 1);
+					// t3
+					A(2 * i, 11) = nullspace(2, 0);
+					A(2 * i + 1, 11) = nullspace(2, 1);
+				}
+
+				Eigen::JacobiSVD<Eigen::MatrixXd> svd_A(A.transpose() * A, Eigen::ComputeFullV);
+				Eigen::MatrixXd result = svd_A.matrixV().col(12 - 1);
+
+				rotation_t rot_out;
+				rot_out << result(0, 0), result(3, 0), result(6, 0),
+					result(1, 0), result(4, 0), result(7, 0),
+					result(2, 0), result(5, 0), result(8, 0);
+				Eigen::JacobiSVD<Eigen::MatrixXd> svd_R_frob(rot_out, Eigen::ComputeFullU | Eigen::ComputeFullV);
+				rot_out = svd_R_frob.matrixU() * svd_R_frob.matrixV().transpose();
+				// test if we found a correct rotation matrix
+				if (rot_out.determinant() < 0)
+					rot_out *= -1.0;
+				return rot_out;
+			}
+
+			opengv::transformation_t opengv::relative_pose::modules::sixpt_urban_main(
+				const bearingVectors_t& f1,
+				const bearingVectors_t& f2)
+			{
+				rotation_t rot_out = sixpt_urban_main_onlyRot(f1,f2);
+				Eigen::Vector3d f2prime1 = rot_out*f2[0];
+				Eigen::Vector3d f2prime2 = rot_out*f2[1];
+				// translation
+				Eigen::Vector3d normal1 = f1[0].cross(f2prime1);
+				Eigen::Vector3d normal2 = f1[1].cross(f2prime2);
+
+				translation_t translation = normal1.cross(normal2);
+				translation = translation / translation.norm();
+
+				Eigen::Vector3d opticalFlow = f1[0] - f2prime1;
+				if (opticalFlow.dot(translation) < 0)
+					translation = -translation;
+
+				transformation_t trafoOut;
+				trafoOut.block<3, 3>(0, 0) = rot_out;
+				trafoOut.col(3) = translation;
+
+				return trafoOut;
+			}
+		}
+	}
+}
+
+
 opengv::translation_t
 opengv::relative_pose::twopt(
     const RelativeAdapterBase & adapter,

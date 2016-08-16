@@ -18,7 +18,7 @@ end
 
 %% generate random view-points
 
-max_parallax = 2.0;
+max_parallax = 0.1;
 max_rotation = 0.5;
 
 position1 = zeros(3,1);

@@ -54,14 +54,14 @@ int main( int argc, char** argv )
   //set experiment parameters
   double noise = 0.0;
   double outlierFraction = 0.0;
-  size_t numberPoints = 10;
+  size_t numberPoints = 100;
 
   //generate a random pose for viewpoint 1
   translation_t position1 = Eigen::Vector3d::Zero();
   rotation_t rotation1 = Eigen::Matrix3d::Identity();
 
   //generate a random pose for viewpoint 2
-  translation_t position2 = generateRandomTranslation(2.0);
+  translation_t position2 = generateRandomTranslation(0.1);
   rotation_t rotation2 = generateRandomRotation(0.5);
 
   //create a fake central camera
@@ -101,7 +101,7 @@ int main( int argc, char** argv )
   //timer
   struct timeval tic;
   struct timeval toc;
-  size_t iterations = 50;
+  size_t iterations = 20;
 
   //running experiments
   std::cout << "running twopt" << std::endl;
@@ -152,6 +152,14 @@ int main( int argc, char** argv )
     eightpt_essential = relative_pose::eightpt(adapter);
   gettimeofday( &toc, 0 );
   double eightpt_time = TIMETODOUBLE(timeval_minus(toc,tic)) / iterations;
+
+  std::cout << "running sixpt_urban" << std::endl;
+  transformation_t sixpt_urban_res;
+  gettimeofday(&tic, 0);
+  for (size_t i = 0; i < iterations; i++)
+	  sixpt_urban_res = relative_pose::sixpt_urban(adapter);
+  gettimeofday(&toc, 0);
+  double sixpt_urban_time = TIMETODOUBLE(timeval_minus(toc, tic)) / iterations;
 
   std::cout << "setting perturbed rotation and ";
   std::cout << "running eigensolver" << std::endl;
@@ -215,6 +223,9 @@ int main( int argc, char** argv )
   std::cout << std::endl;
   std::cout << nonlinear_transformation_10 << std::endl << std::endl;
 
+  std::cout << "results from urbans' sixpt-point algorithm:" << std::endl;
+	std::cout << sixpt_urban_res << std::endl << std::endl;
+
   std::cout << "timings from two-points algorithm: ";
   std::cout << twopt_time << std::endl;
   std::cout << "timings from stewenius' five-point algorithm: ";
@@ -231,4 +242,6 @@ int main( int argc, char** argv )
   std::cout << eigensolver_time << std::endl;
   std::cout << "timings from nonlinear algorithm: ";
   std::cout << nonlinear_time << std::endl;
+  std::cout << "timings from urbans algorithm: ";
+  std::cout << sixpt_urban_time << std::endl;
 }

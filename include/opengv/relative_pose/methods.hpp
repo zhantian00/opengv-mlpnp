@@ -502,19 +502,35 @@ rotations_t sixpt_ventura(
 	const RelativeAdapterBase & adapter,
 	const std::vector<int> & indices);
 
+
 /**
- * \brief Compute the pose between two viewpoints using nonlinear optimization.
- *        Using all available correspondences. Works for both central and
- *        non-central case.
- *
- * \param[in] adapter Visitor holding bearing-vector correspondences, the
- *                    multi-camera configuration, plus the initial values.
- * \return Pose of viewpoint 2 seen from viewpoint 1 (
- *         \f$ \mathbf{T} = \left(\begin{array}{cc} \mathbf{R} & \mathbf{t} \end{array}\right) \f$,
- *         with \f$ \mathbf{t} \f$ being the position of viewpoint 2 seen from
- *         viewpoint 1, and \f$ \mathbf{R} \f$ being the rotation from
- *         viewpoint 2 to viewpoint 1).
  */
+transformation_t sixpt_urban(
+	const RelativeAdapterBase & adapter);
+transformation_t sixpt_urban(
+	const RelativeAdapterBase & adapter,
+	const std::vector<int> & indices);
+rotation_t sixpt_urban_rotOnly(
+	const RelativeAdapterBase & adapter);
+rotation_t sixpt_urban_rotOnly(
+	const RelativeAdapterBase & adapter,
+	const std::vector<int> & indices);
+
+/**
+* \brief Compute the pose between two viewpoints using nonlinear optimization.
+*        Using all available correspondences. Works for both central and
+*        non-central case.
+*
+* \param[in] adapter Visitor holding bearing-vector correspondences, the
+*                    multi-camera configuration, plus the initial values.
+* \return Pose of viewpoint 2 seen from viewpoint 1 (
+*         \f$ \mathbf{T} = \left(\begin{array}{cc} \mathbf{R} & \mathbf{t} \end{array}\right) \f$,
+*         with \f$ \mathbf{t} \f$ being the position of viewpoint 2 seen from
+*         viewpoint 1, and \f$ \mathbf{R} \f$ being the rotation from
+*         viewpoint 2 to viewpoint 1).
+*/
+
+
 transformation_t optimize_nonlinear( RelativeAdapterBase & adapter );
 
 /**

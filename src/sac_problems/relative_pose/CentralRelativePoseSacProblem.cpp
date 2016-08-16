@@ -34,6 +34,7 @@
 #include <opengv/triangulation/methods.hpp>
 #include <Eigen/NonLinearOptimization>
 #include <Eigen/NumericalDiff>
+#include <iostream>
 
 bool
 opengv::sac_problems::
@@ -42,6 +43,12 @@ opengv::sac_problems::
     model_t & outModel) const
 {
   essentials_t essentialMatrices;
+  rotation_t rotMat;
+
+
+  // get possible rotation and translation vectors
+  translation_t translation;
+  rotation_t rotation;
 
   switch(_algorithm)
   {
@@ -88,6 +95,17 @@ opengv::sac_problems::
         opengv::relative_pose::eightpt(_adapter,subIndices4);
     essentialMatrices.push_back(essentialMatrix);
     break;
+  }
+  case SIXPT_URBAN:
+  {
+	  std::vector<int> subIndices4;
+	  for (size_t i = 0; i < 7; i++) subIndices4.push_back(indices[i]);
+	  outModel = opengv::relative_pose::sixpt_urban(_adapter, subIndices4);
+	  //outModel.block<3, 3>(0, 0) =
+		 // outModel.block<3, 3>(0, 0).transpose();
+	  //outModel.col(3) =
+		 // -outModel.block<3, 3>(0, 0)*outModel.col(3);
+	  return true;
   }
   }
 
@@ -214,10 +232,6 @@ opengv::sac_problems::
     // maintain scale
     const double scale = singularValues[0];
 
-    // get possible rotation and translation vectors
-    translation_t translation;
-    rotation_t rotation;
-
     switch(bestQualitySubindex)
     {
     case 0:
@@ -242,12 +256,11 @@ opengv::sac_problems::
 
     // change sign if det = -1
     if( rotation.determinant() < 0 ) rotation = -rotation;
-
-    // output final selection
-    outModel.block<3,3>(0,0) = rotation;
-    outModel.col(3) = translation;
   }
 
+  // output final selection
+  outModel.block<3,3>(0,0) = rotation;
+  outModel.col(3) = translation;
   return true;
 }
 
@@ -327,6 +340,10 @@ opengv::sac_problems::
   case EIGHTPT:
     //8 for minimal solver and additional 1 for decomposition
     sampleSize = 8 + 1;
+    break;
+  case SIXPT_URBAN:
+	  //8 for minimal solver and additional 1 for decomposition
+    sampleSize = 7;
     break;
   }
 

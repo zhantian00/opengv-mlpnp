@@ -117,7 +117,7 @@ int main( int argc, char** argv )
 
   ransac.sac_model_ = relposeproblem_ptr;
   ransac.threshold_ = 0.00001;//2.0*(1.0 - cos(atan(sqrt(2.0)*0.5/800.0)));
-  ransac.max_iterations_ = 300;
+  ransac.max_iterations_ = 2000;
 
   //Run the experiment
   struct timeval tic;

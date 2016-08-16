@@ -108,6 +108,7 @@ public:
    * \return The corresponding bearing vector.
    */
   virtual opengv::bearingVector_t getBearingVector2( size_t index ) const = 0;
+
   /**
    * \brief Retrieve the weight of a correspondence. The weight is supposed to
    *        reflect the quality of a correspondence, and typically is between
@@ -115,6 +116,7 @@ public:
    * \param[in] index The serialized index of the correspondence.
    * \return The corresponding weight.
    */
+
   virtual double getWeight( size_t index ) const = 0;
   /**
    * \brief Retrieve the position of a camera of a correspondence in viewpoint

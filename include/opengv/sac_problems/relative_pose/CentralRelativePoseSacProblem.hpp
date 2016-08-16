@@ -79,7 +79,8 @@ public:
     STEWENIUS = 0, // [5]
     NISTER = 1,    // [6]
     SEVENPT = 2,   // [8]
-    EIGHTPT = 3    // [9,10]
+    EIGHTPT = 3,   // [9,10]
+	SIXPT_URBAN = 4
   } algorithm_t;
 
 

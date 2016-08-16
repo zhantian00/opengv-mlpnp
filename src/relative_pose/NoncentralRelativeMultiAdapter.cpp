@@ -85,6 +85,29 @@ opengv::relative_pose::NoncentralRelativeMultiAdapter::
   return (*_bearingVectors2[pairIndex])[correspondenceIndex];
 }
 
+//opengv::bearingVectors_t
+//opengv::relative_pose::NoncentralRelativeMultiAdapter::
+//getBearingVectors1() const
+//{
+//	assert(pairIndex < _bearingVectors1.size());
+//	opengv::bearingVectors_t all_bearing_vectors;
+//	for (int pair = 0; pair < _bearingVectors2.size(); ++pair)
+//	{
+//		for (int idx = 0; idx < _bearingVectors2[pairIndex]->size(); ++idx)
+//	}
+//
+//	return (*_bearingVectors1[pairIndex]);
+//}
+//
+//opengv::bearingVectors_t
+//opengv::relative_pose::NoncentralRelativeMultiAdapter::
+//getBearingVectors2() const
+//{
+//	assert(pairIndex < _bearingVectors2.size());
+//
+//	return (*_bearingVectors2[pairIndex]);
+//}
+
 double
 opengv::relative_pose::NoncentralRelativeMultiAdapter::
     getWeight( size_t pairIndex, size_t correspondenceIndex ) const

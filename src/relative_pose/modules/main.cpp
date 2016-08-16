@@ -43,6 +43,7 @@
 #include <opengv/relative_pose/modules/ge/modules.hpp>
 #include <opengv/relative_pose/modules/sixpt_ventura/approx_relpose_generalized_fast_computeA.h>
 #include <opengv/relative_pose/modules/sixpt_ventura/Polynomial.hpp>
+
 #include <opengv/OptimizationFunctor.hpp>
 #include <opengv/math/arun.hpp>
 #include <opengv/math/cayley.hpp>
@@ -50,6 +51,7 @@
 
 #include <stdio.h>
 #include <iostream>
+
 
 void
 opengv::relative_pose::modules::fivept_stewenius_main(

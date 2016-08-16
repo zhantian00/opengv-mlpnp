@@ -57,15 +57,16 @@ int main( int argc, char** argv )
 
   //set experiment parameters
   double noise = 0.5;
-  double outlierFraction = 0.1;
-  size_t numberPoints = 100;
+  double outlierFraction = 0.2;
+  size_t numberPoints = 200;
 
   //generate a random pose for viewpoint 1
   translation_t position1 = Eigen::Vector3d::Zero();
   rotation_t rotation1 = Eigen::Matrix3d::Identity();
 
   //generate a random pose for viewpoint 2
-  translation_t position2 = generateRandomTranslation(2.0);
+  translation_t position2 = generateRandomTranslation(0.1);
+
   rotation_t rotation2 = generateRandomRotation(0.5);
 
   //create a fake central camera
@@ -88,7 +89,7 @@ int main( int argc, char** argv )
   //Extract the relative pose
   translation_t position; rotation_t rotation;
   extractRelativePose(
-      position1, position2, rotation1, rotation2, position, rotation );
+      position1, position2, rotation1, rotation2, position, rotation);
 
   //print experiment characteristics
   printExperimentCharacteristics( position, rotation, noise, outlierFraction );
@@ -110,10 +111,10 @@ int main( int argc, char** argv )
       sac_problems::relative_pose::CentralRelativePoseSacProblem> relposeproblem_ptr(
       new sac_problems::relative_pose::CentralRelativePoseSacProblem(
       adapter,
-      sac_problems::relative_pose::CentralRelativePoseSacProblem::NISTER));
+      sac_problems::relative_pose::CentralRelativePoseSacProblem::SIXPT_URBAN));
   ransac.sac_model_ = relposeproblem_ptr;
   ransac.threshold_ = 2.0*(1.0 - cos(atan(sqrt(2.0)*0.5/800.0)));
-  ransac.max_iterations_ = 50;
+  ransac.max_iterations_ = 200;
 
   //Run the experiment
   struct timeval tic;
@@ -122,7 +123,7 @@ int main( int argc, char** argv )
   ransac.computeModel();
   gettimeofday( &toc, 0 );
   double ransac_time = TIMETODOUBLE(timeval_minus(toc,tic));
-
+  
   //print results
   std::cout << "the ransac threshold is: " << ransac.threshold_ << std::endl;
   std::cout << "the ransac results is: " << std::endl;

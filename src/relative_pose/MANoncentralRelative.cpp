@@ -69,6 +69,39 @@ opengv::relative_pose::MANoncentralRelative::
   return bearingVector;
 }
 
+//opengv::bearingVectors_t
+//opengv::relative_pose::MANoncentralRelative::
+//getBearingVectors1() const
+//{
+//	bearingVectors_t bearingVectors(getNumberCorrespondences());
+//	for (int i = 0; i < getNumberCorrespondences(); ++i)
+//	{
+//		bearingVector_t b;
+//		b[0] = _bearingVectors1[i * 6];
+//		b[1] = _bearingVectors1[i * 6 + 1];
+//		b[2] = _bearingVectors1[i * 6 + 2];
+//		bearingVectors[i] = b;
+//	}
+//
+//	return bearingVectors;
+//}
+//
+//opengv::bearingVectors_t
+//opengv::relative_pose::MANoncentralRelative::
+//getBearingVectors2() const
+//{
+//	bearingVectors_t bearingVectors(getNumberCorrespondences());
+//	for (int i = 0; i < getNumberCorrespondences(); ++i)
+//	{
+//		bearingVector_t b;
+//		b[0] = _bearingVectors2[i * 6];
+//		b[1] = _bearingVectors2[i * 6 + 1];
+//		b[2] = _bearingVectors2[i * 6 + 2];
+//		bearingVectors[i] = b;
+//	}
+//	return bearingVectors;
+//}
+
 double
 opengv::relative_pose::MANoncentralRelative::
     getWeight( size_t index ) const

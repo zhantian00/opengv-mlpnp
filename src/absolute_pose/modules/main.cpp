@@ -149,7 +149,7 @@ opengv::absolute_pose::modules::mlpnp_main(
 	// fill design matrix
 	if (planar)
 	{
-		for (size_t i = 0; i < numberCorrespondences; i++)
+		for (size_t i = 0; i < numberCorrespondences; ++i)
 		{
 			point_t pt3_current = points3.col(i);
 			//point4_t points4v = opengv::point4_t(pt3_current[0],
@@ -186,7 +186,7 @@ opengv::absolute_pose::modules::mlpnp_main(
 	}
 	else
 	{
-		for (size_t i = 0; i < numberCorrespondences; i++)
+		for (size_t i = 0; i < numberCorrespondences; ++i)
 		{
 			point_t pt3_current = points3.col(i);
 			//point4_t points4v = opengv::point4_t(pt3_current[0],

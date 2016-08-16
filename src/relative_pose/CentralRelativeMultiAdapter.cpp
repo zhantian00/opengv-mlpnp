@@ -64,8 +64,8 @@ opengv::relative_pose::CentralRelativeMultiAdapter::
     getBearingVector1( size_t pairIndex, size_t correspondenceIndex ) const
 {
   assert(pairIndex < _bearingVectors1.size());
-
   assert(correspondenceIndex < _bearingVectors1[pairIndex]->size());
+
   return (*_bearingVectors1[pairIndex])[correspondenceIndex];
 }
 
@@ -74,10 +74,28 @@ opengv::relative_pose::CentralRelativeMultiAdapter::
     getBearingVector2( size_t pairIndex, size_t correspondenceIndex ) const
 {
   assert(pairIndex < _bearingVectors2.size());
-
   assert(correspondenceIndex < _bearingVectors2[pairIndex]->size());
+
   return (*_bearingVectors2[pairIndex])[correspondenceIndex];
 }
+
+//opengv::bearingVectors_t
+//opengv::relative_pose::CentralRelativeMultiAdapter::
+//getBearingVectors1(size_t pairIndex) const
+//{
+//	assert(pairIndex < _bearingVectors1.size());
+//
+//	return (*_bearingVectors1[pairIndex]);
+//}
+//
+//opengv::bearingVectors_t
+//opengv::relative_pose::CentralRelativeMultiAdapter::
+//getBearingVectors2(size_t pairIndex) const
+//{
+//	assert(pairIndex < _bearingVectors2.size());
+//
+//	return (*_bearingVectors2[pairIndex]);
+//}
 
 double
 opengv::relative_pose::CentralRelativeMultiAdapter::

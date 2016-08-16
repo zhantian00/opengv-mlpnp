@@ -103,6 +103,7 @@ public:
    */
   virtual bearingVector_t getBearingVector2(
       size_t pairIndex, size_t correspondenceIndex ) const = 0;
+
   /**
    * \brief Retrieve the weight of a correspondence. The weight is supposed to
    *        reflect the quality of a correspondence, and typically is between

@@ -92,6 +92,36 @@ opengv::relative_pose::MANoncentralRelativeMulti::
   return bearingVector;
 }
 
+//opengv::bearingVectors_t
+//opengv::relative_pose::MANoncentralRelativeMulti::
+//getBearingVectors1(size_t pairIndex) const
+//{
+//	assert(pairIndex < _numberBearingVectors.size());
+//	bearingVectors_t bearingVectors(_numberBearingVectors[pairIndex]);
+//	for (int i = 0; i < _numberBearingVectors[pairIndex]; ++i)
+//	{
+//		bearingVectors[i][0] = _bearingVectors1[pairIndex][i * 3];
+//		bearingVectors[i][1] = _bearingVectors1[pairIndex][i * 3 + 1];
+//		bearingVectors[i][2] = _bearingVectors1[pairIndex][i * 3 + 2];
+//	}
+//	return bearingVectors;
+//}
+
+//opengv::bearingVectors_t
+//opengv::relative_pose::MANoncentralRelativeMulti::
+//getBearingVectors2(size_t pairIndex) const
+//{
+//	assert(pairIndex < _numberBearingVectors.size());
+//	bearingVectors_t bearingVectors(_numberBearingVectors[pairIndex]);
+//	for (int i = 0; i < _numberBearingVectors[pairIndex]; ++i)
+//	{
+//		bearingVectors[i][0] = _bearingVectors2[pairIndex][i * 3];
+//		bearingVectors[i][1] = _bearingVectors2[pairIndex][i * 3 + 1];
+//		bearingVectors[i][2] = _bearingVectors2[pairIndex][i * 3 + 2];
+//	}
+//	return bearingVectors;
+//}
+
 double
 opengv::relative_pose::MANoncentralRelativeMulti::
     getWeight( size_t pairIndex, size_t correspondenceIndex ) const

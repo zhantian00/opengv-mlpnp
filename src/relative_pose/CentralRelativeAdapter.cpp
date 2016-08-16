@@ -77,6 +77,18 @@ opengv::relative_pose::CentralRelativeAdapter::
   return _bearingVectors2[index];
 }
 
+//opengv::bearingVectors_t
+//opengv::relative_pose::CentralRelativeAdapter::getBearingVectors1() const
+//{
+//	return _bearingVectors1;
+//}
+//
+//opengv::bearingVectors_t
+//opengv::relative_pose::CentralRelativeAdapter::getBearingVectors2() const
+//{
+//	return _bearingVectors2;
+//}
+
 double
 opengv::relative_pose::CentralRelativeAdapter::
     getWeight( size_t index ) const

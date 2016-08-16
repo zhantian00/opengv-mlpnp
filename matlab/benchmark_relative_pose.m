@@ -3,32 +3,40 @@
 clear all;
 clc;
 close all;
-addpath('helpers');
+% addpath('helpers');
 
 %% Configure the benchmark
 
 % central case -> only one camera
 cam_number = 1;
 % Getting 10 points, and testing all algorithms with the respective number of points
-pt_number = 10;
+pt_number = 100;
 % noise test, so no outliers
 outlier_fraction = 0.0;
 % repeat 5000 tests per noise level
-iterations = 5000;
+iterations = 200;
 
+% % The algorithms we want to test
+% algorithms = { 'fivept_stewenius'; 'fivept_nister'; 'fivept_kneip'; 'sevenpt'; 'eightpt'; 'eigensolver';'sixpt_urban' };
+% % Some parameter that tells us what the result means
+% returns = [ 1, 1, 0, 1, 1, 0, 0]; % 1means essential matrix(ces) needing decomposition, %0 means rotation matrix(ces), %2 means transformation matrix
+% % This defines the number of points used for every algorithm
+% indices = { [1, 2, 3, 4, 5]; [1, 2, 3, 4, 5]; [1, 2, 3, 4, 5]; [1, 2, 3, 4, 5, 6, 7]; [1, 2, 3, 4, 5, 6, 7, 8]; [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; [1:10] ; [1:6]};
+% % The name of the algorithms in the final plots
+% names = { '5pt (Stewenius)'; '5pt (Nister)'; '5pt (Kneip)'; '7pt'; '8pt'; 'eigensolver (10pts)'; '6pt (Urban)'};
 % The algorithms we want to test
-algorithms = { 'fivept_stewenius'; 'fivept_nister'; 'fivept_kneip'; 'sevenpt'; 'eightpt'; 'eigensolver'; 'rel_nonlin_central' };
+algorithms = {'twopt_rotationOnly'; 'fivept_stewenius'; 'fivept_nister'; 'fivept_kneip'; 'sevenpt'; 'eightpt'; 'sixpt_urban_onlyRot'};
 % Some parameter that tells us what the result means
-returns = [ 1, 1, 0, 1, 1, 0, 2 ]; % 1means essential matrix(ces) needing decomposition, %0 means rotation matrix(ces), %2 means transformation matrix
+returns = [0, 1, 1, 0, 1, 1, 0]; % 1means essential matrix(ces) needing decomposition, %0 means rotation matrix(ces), %2 means transformation matrix
 % This defines the number of points used for every algorithm
-indices = { [1, 2, 3, 4, 5]; [1, 2, 3, 4, 5]; [1, 2, 3, 4, 5]; [1, 2, 3, 4, 5, 6, 7]; [1, 2, 3, 4, 5, 6, 7, 8]; [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] };
+indices = { [1, 2, 3, 4, 5, 6, 7, 8]; [1, 2, 3, 4, 5]; [1, 2, 3, 4, 5]; [1, 2, 3, 4, 5]; [1, 2, 3, 4, 5, 6, 7]; [1, 2, 3, 4, 5, 6, 7, 8]; [1:7]};
 % The name of the algorithms in the final plots
-names = { '5pt (Stewenius)'; '5pt (Nister)'; '5pt (Kneip)'; '7pt'; '8pt'; 'eigensolver (10pts)'; 'nonlin. opt. (10pts)' };
+names = { 'rot only';'5pt (Stewenius)'; '5pt (Nister)'; '5pt (Kneip)'; '7pt'; '8pt'; '6pt (Urban)'};
 
 % The maximum noise to analyze
 max_noise = 5.0;
 % The step in between different noise levels
-noise_step = 0.1;
+noise_step = 1;
 
 %% Run the benchmark
 
@@ -37,6 +45,7 @@ number_noise_levels = max_noise / noise_step + 1;
 num_algorithms = size(algorithms,1);
 mean_rotation_errors = zeros(num_algorithms,number_noise_levels);
 median_rotation_errors = zeros(num_algorithms,number_noise_levels);
+median_execution_time = zeros(num_algorithms,number_noise_levels);
 noise_levels = zeros(1,number_noise_levels);
 
 %Run the experiment
@@ -45,8 +54,9 @@ for n=1:number_noise_levels
     noise = (n - 1) * noise_step;
     noise_levels(1,n) = noise;
     display(['Analyzing noise level: ' num2str(noise)])
-    
+   
     rotation_errors = zeros(num_algorithms,iterations);
+    execution_times = zeros(num_algorithms,iterations);
     
     counter = 0;
     
@@ -64,8 +74,16 @@ for n=1:number_noise_levels
         allValid = 1;
         
         for a=1:num_algorithms
-            Out = opengv(algorithms{a},indices{a},v1,v2,T_perturbed);
-            
+%         if strcmp(algorithms{a},'sixpt_urban')
+%             tic
+%             [Out1,tout] = UrbanRel(v1,v2);
+%             Out = [Out1,tout];
+%             execution_times(a,i) = toc;
+%         else
+            tic
+            Out = opengv(algorithms{a},indices{a},v1,v2);
+            execution_times(a,i) = toc;
+%         end
             if ~isempty(Out)
             
                 if returns(1,a) == 1
@@ -78,7 +96,6 @@ for n=1:number_noise_levels
                 end
             
                 rotation_errors(a,validIterations+1) = evaluateRotationError( R_gt, Out );
-                
             else
                 
                 allValid = 0;
@@ -102,6 +119,7 @@ for n=1:number_noise_levels
     for a=1:num_algorithms
         mean_rotation_errors(a,n) = mean(rotation_errors(a,1:validIterations));
         median_rotation_errors(a,n) = median(rotation_errors(a,1:validIterations));
+        median_execution_time(a,n) = median(execution_times(a,1:validIterations));
     end
     
 end
@@ -109,15 +127,22 @@ end
 %% Plot the results
 
 figure(1)
-plot(noise_levels,mean_rotation_errors,'LineWidth',2)
+plot(noise_levels,mean_rotation_errors','LineWidth',2)
 legend(names,'Location','NorthWest')
 xlabel('noise level [pix]')
 ylabel('mean rot. error [rad]')
 grid on
 
 figure(2)
-plot(noise_levels,median_rotation_errors,'LineWidth',2)
+plot(noise_levels,median_rotation_errors','LineWidth',2)
 legend(names,'Location','NorthWest')
 xlabel('noise level [pix]')
 ylabel('median rot. error [rad]')
+grid on
+
+figure(3)
+plot(noise_levels,median_execution_time','LineWidth',2)
+legend(names,'Location','NorthWest')
+xlabel('noise level [pix]')
+ylabel('runtime')
 grid on

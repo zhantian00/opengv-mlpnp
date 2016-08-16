@@ -80,7 +80,7 @@ static const char *copyright =
 #include <opengv/sac_problems/relative_pose/EigensolverSacProblem.hpp>
 #include <opengv/sac_problems/relative_pose/RotationOnlySacProblem.hpp>
 #include <opengv/sac_problems/point_cloud/PointCloudSacProblem.hpp>
-
+#include <iostream>
 // The different methods that can be used within Matlab
 static const char* methods[]=
 {
@@ -110,12 +110,15 @@ static const char* methods[]=
   "sevenpt",                  //  7
   "eightpt",                  //  7
   "eigensolver",              // 11
+  "sixpt_urban",              // 11
+  "sixpt_urban_onlyRot",      // 19
   "rotationOnly_ransac",      // 19
   "fivept_stewenius_ransac",  // 23
   "fivept_nister_ransac",     // 20
   "sevenpt_ransac",           // 14
   "eightpt_ransac",           // 14
   "eigensolver_ransac",       // 18
+  "sixpt_urban_ransac",       // 18
   "rel_nonlin_central",       // 18
   "sixpt",                    //  5
   "seventeenpt",              // 11
@@ -133,7 +136,7 @@ static const char* methods[]=
 // The length of the method strings (needed for comparison)
 static const int methodsLengths[] =
     { 3,9,7,4,5,16,14,11,18,4,11,4,21,4,5,18,12,16,13,12,
-	  7,7,11,19,23,20,14,14,18,18,5,11,2,12,18,9,21,12,19 };
+	  7,7,11,11,19,19,23,20,14,14,18,18,18,5,11,2,12,18,9,21,12,19 };
 
 static const int absCentralFirst    =  0;
 static const int absCentralLast     =  8;
@@ -141,11 +144,11 @@ static const int absNoncentralFirst =  9;
 static const int absNoncentralLast  = 12;
 static const int upnpIndex          = 13;
 static const int relCentralFirst    = 14;
-static const int relCentralLast     = 29;
-static const int relNoncentralFirst = 30;
-static const int relNoncentralLast  = 36;
-static const int pointCloudFirst    = 37;
-static const int pointCloudLast     = 38;
+static const int relCentralLast     = 32;
+static const int relNoncentralFirst = 33;
+static const int relNoncentralLast  = 39;
+static const int pointCloudFirst    = 40;
+static const int pointCloudLast     = 41;
 
 // The number of methods (needed for comparison)
 static const int numberMethods = pointCloudLast + 1;
@@ -175,12 +178,15 @@ enum Method
   SEVENPT,
   EIGHTPT,
   EIGENSOLVER,
+  SIXPT_URBAN,
+  SIXPT_URBAN_ONLYROT,
   ROTATIONONLY_RANSAC,
   FIVEPT_STEWENIUS_RANSAC,
   FIVEPT_NISTER_RANSAC,
   SEVENPT_RANSAC,
   EIGHTPT_RANSAC,
   EIGENSOLVER_RANSAC,
+  SIXPT_URBAN_RANSAC,
   REL_NONLIN_CENTRAL,
   SIXPT,
   SEVENTEENPT,
@@ -700,10 +706,10 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
       pointCloudAdapter->setR12(rotation);
   }
 
-  //check if a return argument is needed, otherwise we won't start computing
-  if( nlhs != 1 && nlhs != 2 )
+  // check if a return argument is needed, otherwise we won't start computing
+  if( nlhs != 1 && nlhs != 2 && nlhs != 3 )
   {
-    if( nlhs > 2 )
+    if( nlhs > 3 )
       mexPrintf("opengv: Returns one or two variables!\n");
     return;
   }
@@ -1330,6 +1336,89 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
       memcpy(mxGetData(plhs[0]), temp.data(), 9*sizeof(double));
       break;
     }
+    case SIXPT_URBAN:
+    {
+      if(nlhs > 1)
+      {
+        mexPrintf("opengv: method ");
+        mexPrintf(methods[caseNumber]);
+        mexPrintf(" returns only one parameter.");
+        return;
+      }
+      opengv::transformation_t temp;
+      if(useIndices)
+        temp = opengv::relative_pose::sixpt_urban(*relativeAdapter,indices);
+      else
+        temp = opengv::relative_pose::sixpt_urban(*relativeAdapter);
+      int dims[2];
+      dims[0] = 3;
+      dims[1] = 4;
+      plhs[0] = mxCreateNumericArray(2, dims, mxDOUBLE_CLASS, mxREAL);
+      memcpy(mxGetData(plhs[0]), temp.data(), 12*sizeof(double));
+      break;
+    }
+    case SIXPT_URBAN_ONLYROT:
+    {
+      if(nlhs > 1)
+      {
+        mexPrintf("opengv: method ");
+        mexPrintf(methods[caseNumber]);
+        mexPrintf(" returns only one parameter.");
+        return;
+      }
+      opengv::rotation_t temp;
+      if(useIndices)
+        temp = opengv::relative_pose::sixpt_urban_rotOnly(*relativeAdapter,indices);
+      else
+        temp = opengv::relative_pose::sixpt_urban_rotOnly(*relativeAdapter);
+      int dims[2];
+      dims[0] = 3;
+      dims[1] = 3;
+      plhs[0] = mxCreateNumericArray(2, dims, mxDOUBLE_CLASS, mxREAL);
+      memcpy(mxGetData(plhs[0]), temp.data(), 9*sizeof(double));
+      break;
+    }
+    case SIXPT_URBAN_RANSAC:
+    {
+      relRansacPtr problem;
+      if(useIndices)
+        problem = relRansacPtr( new relRansac( *relativeAdapter, relRansac::SIXPT_URBAN, indices ) );
+      else
+        problem = relRansacPtr( new relRansac( *relativeAdapter, relRansac::SIXPT_URBAN ) );
+      opengv::sac::Ransac<relRansac> ransac;
+      ransac.sac_model_ = problem;
+      ransac.threshold_ = 2.0*(1.0 - cos(atan(sqrt(2.0)*0.5/800.0)));
+      ransac.max_iterations_ = 500;
+      ransac.computeModel();
+
+      opengv::transformation_t optimizedModel;
+      problem->optimizeModelCoefficients(ransac.inliers_,ransac.model_coefficients_,optimizedModel);
+
+      int dims[2];
+      dims[0] = 3;
+      dims[1] = 4;
+      plhs[0] = mxCreateNumericArray(2, dims, mxDOUBLE_CLASS, mxREAL);
+      memcpy(mxGetData(plhs[0]), optimizedModel.data(), 12*sizeof(double));
+
+      if(nlhs >= 2)
+      {
+        //fill the second return variable with the inliers
+        std::vector<int> inliers = ransac.inliers_;
+        for( int i = 0; i < inliers.size(); i++ )
+          inliers[i] += 1;
+        dims[0] = 1;
+        dims[1] = inliers.size();
+        plhs[1] = mxCreateNumericArray(2, dims, mxINT32_CLASS, mxREAL);
+        memcpy(mxGetData(plhs[1]), (void*) &(inliers[0]), inliers.size()*sizeof(int));
+      }
+      if (nlhs == 3)
+      {
+         plhs[2] = mxCreateNumericMatrix(1, 1, mxINT32_CLASS, mxREAL);
+         int* data = (int*) mxGetData(plhs[2]); 
+         data[0] = ransac.iterations_;
+      }
+      break;
+    }
     case ROTATIONONLY_RANSAC:
     {
       rotRansacPtr problem;
@@ -1340,7 +1429,7 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
       opengv::sac::Ransac<rotRansac> ransac;
       ransac.sac_model_ = problem;
       ransac.threshold_ = 2.0*(1.0 - cos(atan(sqrt(2.0)*0.5/800.0)));
-      ransac.max_iterations_ = 50;
+      ransac.max_iterations_ = 500;
       ransac.computeModel();
       int dims[2];
       dims[0] = 3;
@@ -1359,7 +1448,12 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
         plhs[1] = mxCreateNumericArray(2, dims, mxINT32_CLASS, mxREAL);
         memcpy(mxGetData(plhs[1]), (void*) &(inliers[0]), inliers.size()*sizeof(int));
       }
-
+      if (nlhs == 3)
+      {
+         plhs[2] = mxCreateNumericMatrix(1, 1, mxINT32_CLASS, mxREAL);
+         int* data = (int*) mxGetData(plhs[2]); 
+         data[0] =  ransac.iterations_;
+      }
       break;
     }
     case FIVEPT_STEWENIUS_RANSAC:
@@ -1372,7 +1466,7 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
       opengv::sac::Ransac<relRansac> ransac;
       ransac.sac_model_ = problem;
       ransac.threshold_ = 2.0*(1.0 - cos(atan(sqrt(2.0)*0.5/800.0)));
-      ransac.max_iterations_ = 50;
+      ransac.max_iterations_ = 500;
       ransac.computeModel();
 
       opengv::transformation_t optimizedModel;
@@ -1396,7 +1490,12 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
         plhs[1] = mxCreateNumericArray(2, dims, mxINT32_CLASS, mxREAL);
         memcpy(mxGetData(plhs[1]), (void*) &(inliers[0]), inliers.size()*sizeof(int));
       }
-
+      if (nlhs == 3)
+      {
+         plhs[2] = mxCreateNumericMatrix(1, 1, mxINT32_CLASS, mxREAL);
+         int* data = (int*) mxGetData(plhs[2]); 
+         data[0] =  ransac.iterations_;
+      }
       break;
     }
     case FIVEPT_NISTER_RANSAC:
@@ -1409,7 +1508,7 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
       opengv::sac::Ransac<relRansac> ransac;
       ransac.sac_model_ = problem;
       ransac.threshold_ = 2.0*(1.0 - cos(atan(sqrt(2.0)*0.5/800.0)));
-      ransac.max_iterations_ = 50;
+      ransac.max_iterations_ = 500;
       ransac.computeModel();
       int dims[2];
       dims[0] = 3;
@@ -1428,7 +1527,12 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
         plhs[1] = mxCreateNumericArray(2, dims, mxINT32_CLASS, mxREAL);
         memcpy(mxGetData(plhs[1]), (void*) &(inliers[0]), inliers.size()*sizeof(int));
       }
-
+      if (nlhs == 3)
+      {
+         plhs[2] = mxCreateNumericMatrix(1, 1, mxINT32_CLASS, mxREAL);
+         int* data = (int*) mxGetData(plhs[2]); 
+         data[0] =  ransac.iterations_;
+      }
       break;
     }
     case SEVENPT_RANSAC:
@@ -1441,7 +1545,7 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
       opengv::sac::Ransac<relRansac> ransac;
       ransac.sac_model_ = problem;
       ransac.threshold_ = 2.0*(1.0 - cos(atan(sqrt(2.0)*0.5/800.0)));
-      ransac.max_iterations_ = 50;
+      ransac.max_iterations_ = 500;
       ransac.computeModel();
       int dims[2];
       dims[0] = 3;
@@ -1460,7 +1564,12 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
         plhs[1] = mxCreateNumericArray(2, dims, mxINT32_CLASS, mxREAL);
         memcpy(mxGetData(plhs[1]), (void*) &(inliers[0]), inliers.size()*sizeof(int));
       }
-
+      if (nlhs == 3)
+      {
+         plhs[2] = mxCreateNumericMatrix(1, 1, mxINT32_CLASS, mxREAL);
+         int* data = (int*) mxGetData(plhs[2]); 
+         data[0] =  ransac.iterations_;
+      }
       break;
     }
     case EIGHTPT_RANSAC:
@@ -1473,7 +1582,7 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
       opengv::sac::Ransac<relRansac> ransac;
       ransac.sac_model_ = problem;
       ransac.threshold_ = 2.0*(1.0 - cos(atan(sqrt(2.0)*0.5/800.0)));
-      ransac.max_iterations_ = 50;
+      ransac.max_iterations_ = 500;
       ransac.computeModel();
       int dims[2];
       dims[0] = 3;
@@ -1492,7 +1601,12 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
         plhs[1] = mxCreateNumericArray(2, dims, mxINT32_CLASS, mxREAL);
         memcpy(mxGetData(plhs[1]), (void*) &(inliers[0]), inliers.size()*sizeof(int));
       }
-
+      if (nlhs == 3)
+      {
+         plhs[2] = mxCreateNumericMatrix(1, 1, mxINT32_CLASS, mxREAL);
+         int* data = (int*) mxGetData(plhs[2]); 
+         data[0] =  ransac.iterations_;
+      }
       break;
     }
     case EIGENSOLVER_RANSAC:
@@ -1505,7 +1619,7 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
       opengv::sac::Ransac<eigRansac> ransac;
       ransac.sac_model_ = problem;
       ransac.threshold_ = 1.0;
-      ransac.max_iterations_ = 50;
+      ransac.max_iterations_ = 500;
       ransac.computeModel();
       opengv::transformation_t temp;
       temp.block<3,3>(0,0) = ransac.model_coefficients_.rotation;
@@ -1527,7 +1641,12 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
         plhs[1] = mxCreateNumericArray(2, dims, mxINT32_CLASS, mxREAL);
         memcpy(mxGetData(plhs[1]), (void*) &(inliers[0]), inliers.size()*sizeof(int));
       }
-
+      if (nlhs == 3)
+      {
+         plhs[2] = mxCreateNumericMatrix(1, 1, mxINT32_CLASS, mxREAL);
+         int* data = (int*) mxGetData(plhs[2]); 
+         data[0] =  ransac.iterations_;
+      }
       break;
     }
     case REL_NONLIN_CENTRAL:

@@ -101,6 +101,21 @@ opengv::relative_pose::NoncentralRelativeAdapter::
   return _bearingVectors2[index];
 }
 
+//opengv::bearingVectors_t
+//opengv::relative_pose::NoncentralRelativeAdapter::
+//getBearingVectors1() const
+//{
+//	return _bearingVectors1;
+//}
+//
+//opengv::bearingVectors_t
+//opengv::relative_pose::NoncentralRelativeAdapter::
+//getBearingVectors2() const
+//{
+//	return _bearingVectors2;
+//}
+
+
 double
 opengv::relative_pose::NoncentralRelativeAdapter::
     getWeight( size_t index ) const
