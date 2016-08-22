@@ -99,12 +99,8 @@ opengv::sac_problems::
   case SIXPT_URBAN:
   {
 	  std::vector<int> subIndices4;
-	  for (size_t i = 0; i < 7; i++) subIndices4.push_back(indices[i]);
+	  for (size_t i = 0; i < 6; i++) subIndices4.push_back(indices[i]);
 	  outModel = opengv::relative_pose::sixpt_urban(_adapter, subIndices4);
-	  //outModel.block<3, 3>(0, 0) =
-		 // outModel.block<3, 3>(0, 0).transpose();
-	  //outModel.col(3) =
-		 // -outModel.block<3, 3>(0, 0)*outModel.col(3);
 	  return true;
   }
   }
@@ -343,7 +339,7 @@ opengv::sac_problems::
     break;
   case SIXPT_URBAN:
 	  //8 for minimal solver and additional 1 for decomposition
-    sampleSize = 7;
+    sampleSize = 6;
     break;
   }
 
