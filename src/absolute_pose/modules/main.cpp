@@ -28,9 +28,7 @@
  * SUCH DAMAGE.                                                               *
  ******************************************************************************/
 
-#include <iostream>
 
- 
 #include <Eigen/NonLinearOptimization>
 #include <Eigen/NumericalDiff>
 #include <Eigen/StdVector>
