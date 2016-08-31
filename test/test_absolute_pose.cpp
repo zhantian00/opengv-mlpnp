@@ -61,6 +61,9 @@ int main( int argc, char** argv )
   translation_t position = generateRandomTranslation(2.0);
   rotation_t rotation = generateRandomRotation(0.5);
   
+  //non-existent covariances
+  cov3_mats_t emptyCovariances;
+  
   //create a fake central camera
   translations_t camOffsets;
   rotations_t camRotations;
@@ -83,7 +86,8 @@ int main( int argc, char** argv )
   absolute_pose::CentralAbsoluteAdapter adapter(
       bearingVectors,
       points,
-      rotation );
+      rotation,
+      emptyCovariances );
 
   //timer
   struct timeval tic;
