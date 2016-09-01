@@ -31,6 +31,8 @@
 
 #include <Eigen/NonLinearOptimization>
 #include <Eigen/NumericalDiff>
+#include <Eigen/StdVector>
+
 
 #include <opengv/absolute_pose/modules/main.hpp>
 #include <opengv/absolute_pose/modules/mlpnp.hpp>
@@ -59,6 +61,7 @@ opengv::absolute_pose::modules::mlpnp_main(
 	const std::vector<int>& indices,
 	transformation_t& result)
 {
+	
 	size_t numberCorrespondences = indices.size();
 	assert(numberCorrespondences > 5);
 
@@ -284,7 +287,7 @@ opengv::absolute_pose::modules::mlpnp_main(
 		R1.col(0) = Rout1.col(0); R1.col(1) = Rout1.col(1); R1.col(2) = Rout1.col(2);
 		R2.col(0) = -Rout1.col(0); R2.col(1) = -Rout1.col(1); R2.col(2) = Rout1.col(2);
 
-		vector<transformation_t> Ts(4);
+		vector<transformation_t,aligned_allocator<transformation_t>> Ts(4);
 		Ts[0].block<3, 3>(0, 0) = R1; Ts[0].block<3, 1>(0, 3) = t;
 		Ts[1].block<3, 3>(0, 0) = R1; Ts[1].block<3, 1>(0, 3) = -t;
 		Ts[2].block<3, 3>(0, 0) = R2; Ts[2].block<3, 1>(0, 3) = t;
@@ -333,7 +336,7 @@ opengv::absolute_pose::modules::mlpnp_main(
 		// find correct direction in terms of reprojection error, just take the first 6 correspondences
 		//Rout.transposeInPlace();
 		vector<double> error(2);
-		vector<Eigen::Matrix4d> Ts(2);
+		vector<Eigen::Matrix4d,Eigen::aligned_allocator<Eigen::Matrix4d>> Ts(2);
 
 		for (int s = 0; s < 2; ++s)
 		{
@@ -344,7 +347,7 @@ opengv::absolute_pose::modules::mlpnp_main(
 				Ts[s].block<3, 1>(0, 3) = tout;
 			else
 				Ts[s].block<3, 1>(0, 3) = -tout;
-			Ts[s] = Ts[s].inverse();
+			Ts[s] = Ts[s].inverse().eval();
 			for (int p = 0; p < 6; ++p)
 			{
 				bearingVector_t v = Ts[s].block<3, 3>(0, 0)* points3v[p] + Ts[s].block<3, 1>(0, 3);
