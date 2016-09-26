@@ -106,7 +106,7 @@ namespace opengv
 	{
 		namespace modules
 		{
-			opengv::rotation_t opengv::relative_pose::modules::sixpt_urban_main_onlyRot(
+			rotation_t sixpt_urban_main_onlyRot(
 				const bearingVectors_t& f1,
 				const bearingVectors_t& f2)
 			{
@@ -175,7 +175,7 @@ namespace opengv
 				return rot_out;
 			}
 
-			opengv::transformation_t opengv::relative_pose::modules::sixpt_urban_main(
+			transformation_t sixpt_urban_main(
 				const bearingVectors_t& f1,
 				const bearingVectors_t& f2)
 			{
