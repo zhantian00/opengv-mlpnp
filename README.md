@@ -21,19 +21,19 @@ These results can be reproduced by running benchmark_absolute\_pose\_cov.m
 
 ### mean and median rotation error
 
-<img src="resources/mean_rot_error.png" width="250">
-<img src="resources/median_rot_error.png" width="250">
+<img src="resource/mean_rot_error.png" width="250">
+<img src="resource/median_rot_error.png" width="250">
 
 ### mean and median position error
 
-<img src="resources/mean_pos_error.png" width="250">
-<img src="resources/median_pos_error.png" width="250">
+<img src="resource/mean_pos_error.png" width="250">
+<img src="resource/median_pos_error.png" width="250">
 
 ## Results of the 6pt relative rotation solver
 
 These results can be reproduced by running benchmark\_relative\_pose.m .
 Baseline is sampled up to 10cm.
 
-<img src="resources/rel_ori_median_rot_error.png" width="250">
-<img src="resources/rel_ori_runtime.png" width="250">
+<img src="resource/rel_ori_median_rot_error.png" width="250">
+<img src="resource/rel_ori_runtime.png" width="250">
 
