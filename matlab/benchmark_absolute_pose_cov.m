@@ -10,18 +10,18 @@ addpath('helpers');
 % central case -> only one camera
 cam_number = 1;
 % let's only get 10 points, and generate new ones in each iteration
-pt_number = 10;
+pt_number = 50;
 % noise test, so no outliers
 outlier_fraction = 0.0;
 % repeat 5000 iterations per noise level
 iterations = 100;
 
 % The algorithms we want to test
-algorithms = { 'p3p_kneip'; 'p3p_gao'; 'mlpnp'; 'mlpnp'; 'epnp'; 'abs_nonlin_central'; 'upnp'; 'upnp' };
+algorithms = {'mlpnp'; 'mlpnp'; 'epnp'; 'abs_nonlin_central'; 'upnp';  };
 % This defines the number of points used for every algorithm
-indices = { [1, 2, 3]; [1, 2, 3]; [1:pt_number];[1:pt_number];[1:pt_number]; [1:pt_number]; [1:pt_number]; [1, 2, 3] };
+indices = { [1:pt_number];[1:pt_number];[1:pt_number]; [1:pt_number]; [1:pt_number];  };
 % The name of the algorithms on the plots
-names = { 'P3P (Kneip)'; 'P3P (Gao)'; 'MLPnP';'MLPnP+cov';'EPnP'; 'nonlinear optimization'; 'UPnP'; 'UPnP (minimal)' };
+names = {'MLPnP'; 'MLPnP+cov'; 'EPnP'; 'nonlinear optimization'; 'UPnP';  };
 
 % The maximum noise to analyze
 max_noise = 5.0;
@@ -61,7 +61,7 @@ for n=1:number_noise_levels
         
         % run all algorithms
         for a=1:num_algorithms            
-            if (strcmp(names{a},'MLPnP+cov') && noise>0)
+            if (strcmp(names{a},'MLPnP+cov') && noise > 0)
                 T = opengv(algorithms{a},indices{a},points,v,T_perturbed,cov);
             else
                 T = opengv(algorithms{a},indices{a},points,v,T_perturbed);
@@ -90,30 +90,33 @@ end
 
 %% Plot the results
 
+
+
 figure(1)
 plot(noise_levels',mean_rotation_errors','LineWidth',2)
 legend(names,'Location','NorthWest')
 xlabel('noise level [pix]')
 ylabel('mean rot. error [rad]')
 grid on
-
+set(gcf,'color','w');
 figure(2)
 plot(noise_levels',median_rotation_errors','LineWidth',2)
 legend(names,'Location','NorthWest')
 xlabel('noise level [pix]')
 ylabel('median rot. error [rad]')
 grid on
-
+set(gcf,'color','w');
 figure(3)
 plot(noise_levels',mean_position_errors','LineWidth',2)
 legend(names,'Location','NorthWest')
 xlabel('noise level [pix]')
 ylabel('mean pos. error [m]')
 grid on
-
+set(gcf,'color','w');
 figure(4)
 plot(noise_levels',median_position_errors','LineWidth',2)
 legend(names,'Location','NorthWest')
 xlabel('noise level [pix]')
 ylabel('median pos. error [m]')
 grid on
+set(gcf,'color','w');

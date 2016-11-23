@@ -56,9 +56,9 @@ end
 
 %% Plot the results
 
-bins = [0.000001:0.000001:0.00001];
+bins =[1e-6:1e-6:1e-4];
 hist(execution_times',bins)
-legend(names,'Location','NorthWest')
+legend(names,'Location','NorthEast')
 xlabel('execution times [s]')
 grid on
 

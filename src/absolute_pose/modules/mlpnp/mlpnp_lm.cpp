@@ -263,7 +263,7 @@ void opengv::absolute_pose::modules::mlpnp::mlpnp_gn(
 	int it_cnt = 0;
 	bool stop = false;
 	const int maxIt = 5;
-	double epsP = 1e-6;
+	double epsP = 1e-5;
 
 	Eigen::MatrixXd JacTSKll;
 	Eigen::MatrixXd A;

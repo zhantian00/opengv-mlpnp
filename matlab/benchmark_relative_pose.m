@@ -10,29 +10,28 @@ close all;
 % central case -> only one camera
 cam_number = 1;
 % Getting 10 points, and testing all algorithms with the respective number of points
-pt_number = 100;
+pt_number = 10;
 % noise test, so no outliers
 outlier_fraction = 0.0;
 % repeat 5000 tests per noise level
-iterations = 200;
+iterations = 100;
 
-% % The algorithms we want to test
-% algorithms = { 'fivept_stewenius'; 'fivept_nister'; 'fivept_kneip'; 'sevenpt'; 'eightpt'; 'eigensolver';'sixpt_urban' };
-% % Some parameter that tells us what the result means
-% returns = [ 1, 1, 0, 1, 1, 0, 0]; % 1means essential matrix(ces) needing decomposition, %0 means rotation matrix(ces), %2 means transformation matrix
-% % This defines the number of points used for every algorithm
-% indices = { [1, 2, 3, 4, 5]; [1, 2, 3, 4, 5]; [1, 2, 3, 4, 5]; [1, 2, 3, 4, 5, 6, 7]; [1, 2, 3, 4, 5, 6, 7, 8]; [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; [1:10] ; [1:6]};
-% % The name of the algorithms in the final plots
-% names = { '5pt (Stewenius)'; '5pt (Nister)'; '5pt (Kneip)'; '7pt'; '8pt'; 'eigensolver (10pts)'; '6pt (Urban)'};
 % The algorithms we want to test
-algorithms = {'twopt_rotationOnly'; 'fivept_stewenius'; 'fivept_nister'; 'fivept_kneip'; 'sevenpt'; 'eightpt'; 'sixpt_urban_onlyRot'};
+% algorithms = {'twopt_rotationOnly'; 'fivept_stewenius'; 'fivept_nister'; 'fivept_kneip'; 'sevenpt'; 'eightpt'; 'sixpt_urban_onlyRot'};
+% % Some parameter that tells us what the result means
+% returns = [0, 1, 1, 0, 1, 1, 0]; % 1means essential matrix(ces) needing decomposition, %0 means rotation matrix(ces), %2 means transformation matrix
+% % This defines the number of points used for every algorithm
+% indices = { [1, 2, 3, 4, 5, 6, 7, 8]; [1:10]; [1, 2, 3, 4, 5]; [1, 2, 3, 4, 5]; [1, 2, 3, 4, 5, 6, 7]; [1, 2, 3, 4, 5, 6, 7, 8]; [1:10]};
+% % The name of the algorithms in the final plots
+% names = { 'rot only';'5pt (Stewenius) (10pts)'; '5pt (Nister)'; '5pt (Kneip)'; '7pt'; '8pt'; '6pt (Urban) (10pts)'};
+% The algorithms we want to test
+algorithms = {'fivept_stewenius';  'fivept_kneip'; 'eightpt'; 'sixpt_urban_onlyRot'};
 % Some parameter that tells us what the result means
-returns = [0, 1, 1, 0, 1, 1, 0]; % 1means essential matrix(ces) needing decomposition, %0 means rotation matrix(ces), %2 means transformation matrix
+returns = [1, 0, 1, 0]; % 1means essential matrix(ces) needing decomposition, %0 means rotation matrix(ces), %2 means transformation matrix
 % This defines the number of points used for every algorithm
-indices = { [1, 2, 3, 4, 5, 6, 7, 8]; [1, 2, 3, 4, 5]; [1, 2, 3, 4, 5]; [1, 2, 3, 4, 5]; [1, 2, 3, 4, 5, 6, 7]; [1, 2, 3, 4, 5, 6, 7, 8]; [1:7]};
+indices = { [1:5];  [1:5]; [1:8]; [1:8]};
 % The name of the algorithms in the final plots
-names = { 'rot only';'5pt (Stewenius)'; '5pt (Nister)'; '5pt (Kneip)'; '7pt'; '8pt'; '6pt (Urban)'};
-
+names = {'5pt (Stewenius)'; '5pt (Kneip)';  '8pt'; '6pt (Urban) (8pts)'};
 % The maximum noise to analyze
 max_noise = 5.0;
 % The step in between different noise levels
@@ -65,7 +64,7 @@ for n=1:number_noise_levels
     for i=1:iterations
         
         % generate experiment        
-        [v1,v2,t,R] = create2D2DExperiment(pt_number,cam_number,noise,outlier_fraction);
+        [v1,v2,t,R] = create2D2DExperiment_baseline(pt_number,cam_number,noise,outlier_fraction,0.1);
         [t_perturbed,R_perturbed] = perturb(t,R,0.01);
         T_perturbed = [R_perturbed,t_perturbed];
         R_gt = R;
@@ -132,17 +131,18 @@ legend(names,'Location','NorthWest')
 xlabel('noise level [pix]')
 ylabel('mean rot. error [rad]')
 grid on
-
+set(gcf,'color','w');
 figure(2)
 plot(noise_levels,median_rotation_errors','LineWidth',2)
 legend(names,'Location','NorthWest')
 xlabel('noise level [pix]')
 ylabel('median rot. error [rad]')
 grid on
-
+set(gcf,'color','w');
 figure(3)
 plot(noise_levels,median_execution_time','LineWidth',2)
 legend(names,'Location','NorthWest')
 xlabel('noise level [pix]')
 ylabel('runtime')
 grid on
+set(gcf,'color','w');

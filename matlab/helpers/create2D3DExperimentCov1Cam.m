@@ -5,8 +5,8 @@ minDepth = 4.0;
 maxDepth = 8.0;
 
 body_points  = [xrand(1,pt_number,[-2 2]); xrand(1,pt_number,[-2 2]); xrand(1,pt_number,[minDepth maxDepth])];
-t   = mean(body_points,2);
-R   = rodrigues(randn(3,1));
+t = mean(body_points,2);
+R = rodrigues(randn(3,1));
 points = R\(body_points-repmat(t,1,pt_number));
             
 %% Now create the correspondences by looping through the cameras
@@ -18,14 +18,14 @@ cov = zeros(9,pt_number);
 % project poitns
 xx = [body_points(1,:)./body_points(3,:); body_points(2,:)./body_points(3,:)]*focal_length;
 std = rand(1,pt_number)*noise;
-noiseAdd = randn(2,pt_number).*[std;std];
+noiseAdd = randn(1,pt_number).*[std;std];
 xxn = xx+noiseAdd;
 homx = [xxn/focal_length; ones(1,size(xxn,2))];
 v = normc(homx);
 for i=1:pt_number
     % covariance projection
     cov_proj = K\diag([std(i)^2 std(i)^2 0])/K';
-    J = (eye(3)-(v(1:3,i)*v(1:3,i)')/(v(1:3,i)'*v(1:3,i)))/norm(homx);
+    J = (eye(3)-(v(:,i)*v(:,i)')/(v(:,i)'*v(:,i)))/norm(v);
     Evv = J*cov_proj*J';
     cov(:,i) = reshape(Evv,9,1);
 end
