@@ -125,7 +125,8 @@ opengv::absolute_pose::modules::mlpnp_main(
 		for (size_t i = 0; i < numberCorrespondences; ++i)
 		{
 			// invert matrix
-			cov2_mat_t temp = (nullspaces[i].transpose() * covMats[i] * nullspaces[i]).inverse().eval();
+			cov2_mat_t temp = nullspaces[i].transpose() * covMats[i] * nullspaces[i];
+			temp = temp.inverse().eval();
 			P.coeffRef(l, l) = temp(0, 0);
 			P.coeffRef(l, l + 1) = temp(0, 1);
 			P.coeffRef(l + 1, l) = temp(1, 0);
@@ -155,9 +156,7 @@ opengv::absolute_pose::modules::mlpnp_main(
 		for (size_t i = 0; i < numberCorrespondences; ++i)
 		{
 			point_t pt3_current = points3.col(i);
-			point4_t points4v = opengv::point4_t(pt3_current[0],
-				pt3_current[1], pt3_current[2], 1.0);
-			points4v = points4v / points4v.norm();
+
 			// r12
 			A(2 * i, 0) = nullspaces[i](0, 0) * pt3_current[1];
 			A(2 * i + 1, 0) = nullspaces[i](0, 1) * pt3_current[1];
@@ -192,36 +191,34 @@ opengv::absolute_pose::modules::mlpnp_main(
 		for (size_t i = 0; i < numberCorrespondences; ++i)
 		{
 			point_t pt3_current = points3.col(i);
-			point4_t points4v = opengv::point4_t(pt3_current[0],
-				pt3_current[1], pt3_current[2], 1.0);
-			points4v = points4v / points4v.norm();
+
 			// r11
-			A(2 * i, 0) = nullspaces[i](0, 0) * points4v[0];
-			A(2 * i + 1, 0) = nullspaces[i](0, 1) * points4v[0];
+			A(2 * i, 0) = nullspaces[i](0, 0) * pt3_current[0];
+			A(2 * i + 1, 0) = nullspaces[i](0, 1) * pt3_current[0];
 			// r12
-			A(2 * i, 1) = nullspaces[i](0, 0) * points4v[1];
-			A(2 * i + 1, 1) = nullspaces[i](0, 1) * points4v[1];
+			A(2 * i, 1) = nullspaces[i](0, 0) * pt3_current[1];
+			A(2 * i + 1, 1) = nullspaces[i](0, 1) * pt3_current[1];
 			// r13
-			A(2 * i, 2) = nullspaces[i](0, 0) * points4v[2];
-			A(2 * i + 1, 2) = nullspaces[i](0, 1) * points4v[2];
+			A(2 * i, 2) = nullspaces[i](0, 0) * pt3_current[2];
+			A(2 * i + 1, 2) = nullspaces[i](0, 1) * pt3_current[2];
 			// r21
-			A(2 * i, 3) = nullspaces[i](1, 0) * points4v[0];
-			A(2 * i + 1, 3) = nullspaces[i](1, 1) * points4v[0];
+			A(2 * i, 3) = nullspaces[i](1, 0) * pt3_current[0];
+			A(2 * i + 1, 3) = nullspaces[i](1, 1) * pt3_current[0];
 			// r22
-			A(2 * i, 4) = nullspaces[i](1, 0) * points4v[1];
-			A(2 * i + 1, 4) = nullspaces[i](1, 1)* points4v[1];
+			A(2 * i, 4) = nullspaces[i](1, 0) * pt3_current[1];
+			A(2 * i + 1, 4) = nullspaces[i](1, 1)* pt3_current[1];
 			// r23
-			A(2 * i, 5) = nullspaces[i](1, 0) * points4v[2];
-			A(2 * i + 1, 5) = nullspaces[i](1, 1) * points4v[2];
+			A(2 * i, 5) = nullspaces[i](1, 0) * pt3_current[2];
+			A(2 * i + 1, 5) = nullspaces[i](1, 1) * pt3_current[2];
 			// r31
-			A(2 * i, 6) = nullspaces[i](2, 0) * points4v[0];
-			A(2 * i + 1, 6) = nullspaces[i](2, 1) * points4v[0];
+			A(2 * i, 6) = nullspaces[i](2, 0) * pt3_current[0];
+			A(2 * i + 1, 6) = nullspaces[i](2, 1) * pt3_current[0];
 			// r32
-			A(2 * i, 7) = nullspaces[i](2, 0) * points4v[1];
-			A(2 * i + 1, 7) = nullspaces[i](2, 1) * points4v[1];
+			A(2 * i, 7) = nullspaces[i](2, 0) * pt3_current[1];
+			A(2 * i + 1, 7) = nullspaces[i](2, 1) * pt3_current[1];
 			// r33
-			A(2 * i, 8) = nullspaces[i](2, 0) * points4v[2];
-			A(2 * i + 1, 8) = nullspaces[i](2, 1) * points4v[2];
+			A(2 * i, 8) = nullspaces[i](2, 0) * pt3_current[2];
+			A(2 * i + 1, 8) = nullspaces[i](2, 1) * pt3_current[2];
 			// t1
 			A(2 * i, 9) = nullspaces[i](0, 0);
 			A(2 * i + 1, 9) = nullspaces[i](0, 1);
@@ -237,13 +234,13 @@ opengv::absolute_pose::modules::mlpnp_main(
 	//////////////////////////////////////
 	// 4. solve least squares
 	//////////////////////////////////////
-	//Eigen::MatrixXd AtPA;
-	////if (use_cov)
-	////	AtPA = A.transpose() * P * A; // setting up the full normal equations seems to be unstable
-	////else
-	//	AtPA = A.transpose() * A;
+	Eigen::MatrixXd AtPA;
+	if (use_cov)
+		AtPA = A.transpose() * P * A; // setting up the full normal equations seems to be unstable
+	else
+		AtPA = A.transpose() * A;
 
-	Eigen::JacobiSVD<Eigen::MatrixXd> svd_A(A.transpose() * A, Eigen::ComputeFullV);
+	Eigen::JacobiSVD<Eigen::MatrixXd> svd_A(AtPA, Eigen::ComputeFullV);
 	Eigen::MatrixXd result1 = svd_A.matrixV().col(colsA - 1);
 
 	////////////////////////////////
@@ -301,7 +298,7 @@ opengv::absolute_pose::modules::mlpnp_main(
 			{
 				reproPt = Ts[i].block<3, 3>(0, 0)*points3v[p] + Ts[i].block<3, 1>(0, 3);
 				reproPt = reproPt / reproPt.norm();
-				norms += 1.0 - reproPt.transpose()*f[indices[p]];
+				norms += (1.0 - reproPt.transpose()*f[indices[p]]);
 			}
 			normVal[i] = norms;
 		}
@@ -318,9 +315,9 @@ opengv::absolute_pose::modules::mlpnp_main(
 			result1(1, 0), result1(4, 0), result1(7, 0),
 			result1(2, 0), result1(5, 0), result1(8, 0);
 		// get the scale
-		//double scale = 1.0 / 
-		//	std::pow(std::abs(tmp.col(0).norm() * tmp.col(1).norm()* tmp.col(2).norm()), 1.0 / 3.0);
-		double scale = 1.0 / std::sqrt(std::abs(tmp.col(0).norm() * tmp.col(1).norm()));
+		double scale = 1.0 / 
+			std::pow(std::abs(tmp.col(0).norm() * tmp.col(1).norm()* tmp.col(2).norm()), 1.0 / 3.0);
+	    //double scale = 1.0 / std::sqrt(std::abs(tmp.col(0).norm() * tmp.col(1).norm()));
 		// find best rotation matrix in frobenius sense
 		Eigen::JacobiSVD<Eigen::MatrixXd> svd_R_frob(tmp, Eigen::ComputeFullU | Eigen::ComputeFullV);
 		Rout = svd_R_frob.matrixU() * svd_R_frob.matrixV().transpose();
@@ -347,7 +344,7 @@ opengv::absolute_pose::modules::mlpnp_main(
 			{
 				bearingVector_t v = Ts[s].block<3, 3>(0, 0)* points3v[p] + Ts[s].block<3, 1>(0, 3);
 				v = v / v.norm();
-				error[s] += 1.0 - v.transpose() * f[indices[p]];
+				error[s] += (1.0 - v.transpose() * f[indices[p]]);
 			}
 		}
 		if (error[0] < error[1])

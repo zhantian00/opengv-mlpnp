@@ -55,7 +55,7 @@ for n=1:number_noise_levels
         
         % generate experiment
         [points,v,cov,t,R] = create2D3DExperimentCov1Cam(pt_number,noise,outlier_fraction);
-        [t_perturbed,R_perturbed] = perturb(t,R,0.01);
+        [t_perturbed,R_perturbed] = perturb(t,R,0.1);
         T_perturbed = [R_perturbed,t_perturbed];
         T_gt = [R,t];
         

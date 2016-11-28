@@ -421,7 +421,7 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
   {
     // X = opengv( method, indices, data1, data2, prior, covariancedata)
     // Check the input
-    data1 = prhs[2]; // pointrs
+    data1 = prhs[2]; // points
     data2 = prhs[3]; // bearings
     data3 = prhs[5]; // covariance 
     // Check the dimensions of the arguments

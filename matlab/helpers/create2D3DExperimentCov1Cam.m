@@ -25,7 +25,7 @@ v = normc(homx);
 for i=1:pt_number
     % covariance projection
     cov_proj = K\diag([std(i)^2 std(i)^2 0])/K';
-    J = (eye(3)-(v(:,i)*v(:,i)')/(v(:,i)'*v(:,i)))/norm(v);
+    J = (eye(3)-(v(:,i)*v(:,i)')/(v(:,i)'*v(:,i)))/norm(homx(:,i));
     Evv = J*cov_proj*J';
     cov(:,i) = reshape(Evv,9,1);
 end

@@ -805,9 +805,9 @@ transformation_t optimize_nonlinear(
   LevenbergMarquardt< NumericalDiff<OptimizeNonlinearFunctor1> > lm(numDiff);
 
   lm.resetParameters();
-  lm.parameters.ftol = 1.E1*NumTraits<double>::epsilon();
-  lm.parameters.xtol = 1.E1*NumTraits<double>::epsilon();
-  lm.parameters.maxfev = 1000;
+  lm.parameters.ftol = 1e-7;
+  lm.parameters.xtol = 1e-7;
+  lm.parameters.maxfev = 100;
   lm.minimize(x);
 
   transformation_t transformation;
