@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 2.4.6)
-project(opengv)
+cmake_minimum_required(VERSION 3.1.3)
+project(opengv VERSION 1.0 LANGUAGES CXX)
 
 set (OPENGV_VERSION_MAJOR 1)
 set (OPENGV_VERSION_MINOR 0)
@@ -41,7 +41,7 @@ OPTION(INSTALL_OPENGV "Install OpenGV on the system" OFF)
 IF(WIN32)
 add_definitions (-bigobj -W0 -MP -Zm10)
 ELSE()
-add_definitions (-Wall -march=native -O3 ) #TODO use correct c++11 def once everybody has moved to gcc 4.7 # for now I even removed std=gnu++0x
+# add_definitions (-Wall -march=native -O3 ) #TODO use correct c++11 def once everybody has moved to gcc 4.7 # for now I even removed std=gnu++0x
 IF(BUILD_POSITION_INDEPENDENT_CODE)
   add_definitions( -fPIC )
 ENDIF()
@@ -309,6 +309,34 @@ IF (BUILD_TESTS)
     COMMAND test_Sturm)
 
 ENDIF()
+
+# Configuration
+set(config_install_dir "lib/cmake/${PROJECT_NAME}-${PROJECT_VERSION}")
+set(include_install_dir "include")
+set(version_config "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake")
+set(project_config ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake)
+set(targets_export_name ${PROJECT_NAME}Targets)
+
+# Include module with fuction 'write_basic_package_version_file'
+include(CMakePackageConfigHelpers)
+
+# Configure '<PROJECT-NAME>ConfigVersion.cmake'
+# Note: PROJECT_VERSION is used as a VERSION
+write_basic_package_version_file(
+    "${version_config}" COMPATIBILITY SameMajorVersion )
+
+# Configure '<PROJECT-NAME>Config.cmake'
+# Use variables:
+#   * targets_export_name
+#   * PROJECT_NAME
+configure_package_config_file(
+    "modules/Config.cmake.in"
+    "${project_config}"
+    INSTALL_DESTINATION "${config_install_dir}")
+
+# Export '<PROJECT-NAME>Targets.cmake' to build dir (to find package in build dir without install)
+export(TARGETS opengv FILE "${CMAKE_CURRENT_BINARY_DIR}/${targets_export_name}.cmake")
+
 
 IF (INSTALL_OPENGV)
   install(
